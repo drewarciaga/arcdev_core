@@ -1,0 +1,27 @@
+{
+    "name": "arcdev-packages/core",
+    "description": "Package for creating and managing landing pages",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "ArcdevPackages\\Core\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "drew"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.3"
+    },
+        "extra": {
+        "laravel": {
+            "providers": [
+                "ArcdevPackages\\Core\\CoreServiceProvider"
+            ]
+        }
+    }
+}
