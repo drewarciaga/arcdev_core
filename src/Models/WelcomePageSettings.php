@@ -161,7 +161,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . '-' . $this->id . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -207,7 +207,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -253,7 +253,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -299,7 +299,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -345,7 +345,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
