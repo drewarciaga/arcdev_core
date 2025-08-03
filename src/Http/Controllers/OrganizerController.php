@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\Models\User;
-use ArcdevPackages\Core\Helpers;
+
+use ArcdevPackages\Core\Helpers\Encrypt;
+use ArcdevPackages\Core\Helpers\HashHelper;
 use ArcdevPackages\Core\Traits\UtilsTrait;
 use ArcdevPackages\Core\Models\Organizer;
 
@@ -40,7 +42,7 @@ class OrganizerController extends Controller
     
     public function getOrganizerList(){
         $organizersList = Organizer::select('id', 'id as value', 'business_name as label')->active()->orderBy('business_name')->get();
-        return response()->json(encryptData($organizersList));
+        return response()->json(Encrypt::encryptData($organizersList));
     }
 
     public function getAll(Request $request){
@@ -108,13 +110,13 @@ class OrganizerController extends Controller
 
     	return response()->json([
             'status'     => 200,
-            'data'       => encryptData($organizers),
+            'data'       => Encrypt::encryptData($organizers),
             'total'      => $total, 
         ]);
     }
 
     public function show($hashid){
-        $id = decodeId($hashid);
+        $id = HashHelper::decodeId($hashid);
         $organizer = Organizer::find($id);
         
         if(!empty($organizer)){
@@ -129,7 +131,7 @@ class OrganizerController extends Controller
             }
         }
 
-    	return response()->json(encryptData($organizer));
+    	return response()->json(Encrypt::encryptData($organizer));
     }
 
     public function create(){
@@ -162,7 +164,7 @@ class OrganizerController extends Controller
         $organizer->email                     = isset($input['email'])?$input['email']:null;
         $organizer->mobile_no                 = isset($input['mobile_no'])?$this->clearChars($input['mobile_no']):null;
         $organizer->mobile_no_2               = isset($input['mobile_no_2'])?$this->clearChars($input['mobile_no_2']):null;
-        $organizer->home_address              = isset($input['home_address'])?$this->clearChars($input['home_address']):null;
+        $organizer->business_address          = isset($input['business_address'])?$this->clearChars($input['business_address']):null;
         $organizer->social_media_data         = isset($input['social_media_data'])?$input['social_media_data']:null;
         $organizer->active                    = (isset($input['active']) && $input['active'] == 1) ? 1 : 0;
         $organizer->organizer_type            = (isset($input['organizer_type']) && $input['organizer_type'] == 1) ? 1 : 0;
@@ -202,7 +204,7 @@ class OrganizerController extends Controller
     }
 
     public function update(Request $request, $hashid){
-        $id = decodeId($hashid);
+        $id = HashHelper::decodeId($hashid);
         $input = $request->all();
 
         $organizer = Organizer::findOrFail($id);
@@ -240,7 +242,7 @@ class OrganizerController extends Controller
     }
 
     public function destroy($hashid){
-        $id = decodeId($hashid);
+        $id = HashHelper::decodeId($hashid);
         $data['error'] = "";
         $organizer = Organizer::find($id);
         if(empty($organizer)){

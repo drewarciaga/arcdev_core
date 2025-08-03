@@ -22,7 +22,7 @@ export default function useOrganizer(){
         email: '',
         mobile_no: '',
         mobile_no_2: '',
-        home_address: '',
+        business_address: '',
         active: 1,
         image_url: null,
         image_img: null,
@@ -65,7 +65,7 @@ export default function useOrganizer(){
         organizer.email = ''
         organizer.mobile_no = ''
         organizer.mobile_no_2 = ''
-        organizer.home_address = ''
+        organizer.business_address = ''
         organizer.active = 1
         organizer.image_url = null
         organizer.image_img = null
@@ -94,7 +94,7 @@ export default function useOrganizer(){
                 organizer.email                = response.data.email
                 organizer.mobile_no            = response.data.mobile_no
                 organizer.mobile_no_2          = response.data.mobile_no_2
-                organizer.home_address         = response.data.home_address
+                organizer.business_address     = response.data.business_address
                 organizer.active               = response.data.active
                 organizer.image_img            = response.data.image_url
                 organizer.thumbnail_img        = response.data.thumbnail_url
@@ -154,7 +154,7 @@ export default function useOrganizer(){
             'email',
             'mobile_no',
             'mobile_no_2',
-            'home_address',
+            'business_address',
             'active',
             'organizer_type',
             'slug',

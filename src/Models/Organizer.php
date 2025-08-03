@@ -35,7 +35,7 @@ class Organizer extends MyBaseModel
         'email',
         'mobile_no',
         'mobile_no_2',
-        'home_address',
+        'business_address',
         'image_url',
         'thumbnail_url',
         'profile_url',

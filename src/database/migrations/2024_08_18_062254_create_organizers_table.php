@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('mobile_no')->nullable();
             $table->string('mobile_no_2')->nullable();
-            $table->string('home_address')->nullable();
+            $table->string('business_address')->nullable();
             $table->string('image_url')->nullable();
             $table->string('thumbnail_url')->nullable();
             $table->string('profile_url')->nullable();

@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use ArcdevPackages\Core\Helpers;
+
+use ArcdevPackages\Core\Helpers\Encrypt;
 use ArcdevPackages\Core\Traits\UtilsTrait;
 use ArcdevPackages\Core\Models\Organizer;
 use ArcdevPackages\Core\Models\OrganizerSetting;
@@ -43,7 +44,7 @@ class OrganizerSettingController extends Controller
             $organizer_settings = OrganizerSetting::first();
         }
 
-    	return response()->json(encryptData($organizer_settings));
+    	return response()->json(Encrypt::encryptData($organizer_settings));
     }
    
     public function mapModel($organizer_settings, $input){
