@@ -43,10 +43,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/access_controls/getAll', [AccessControlController::class, 'getAll'])->name('getAllAccessControls');
     Route::post('/updateUserRole', [AccessControlController::class, 'updateUserRole'])->name('updateUserRole');
     Route::get('/access_controls/user_role/{user_id}', [AccessControlController::class, 'getUserRole'])->name('getUserRole');
-    Route::resource('access_controls', AccessControlController::class)->middleware(EnsureUserHasRole::class.':admin');
+    Route::resource('access_controls', AccessControlController::class)->middleware(EnsureUserHasRole::class.':super_admin');
 
     Route::get('/organizers/getAll', [OrganizerController::class, 'getAll'])->name('getAllCompanies');
-    Route::resource('organizers', OrganizerController::class)->middleware(EnsureUserHasRole::class.':admin');
+    Route::resource('organizers', OrganizerController::class)->middleware(EnsureUserHasRole::class.':super_admin');
 
     Route::get('/organizerSettings', [OrganizerSettingController::class, 'organizerSettings'])->name('organizerSettings');
     Route::get('/getOrganizerSettings', [OrganizerSettingController::class, 'getOrganizerSettings'])->name('getOrganizerSettings');

@@ -42,6 +42,12 @@ class OrganizerController extends Controller
     
     public function getOrganizerList(){
         $organizersList = Organizer::select('id', 'id as value', 'business_name as label')->active()->orderBy('business_name')->get();
+
+        foreach($organizersList as $organizer){
+            $organizer->value = $organizer->hashid;
+            unset($organizer->hashid);
+        }
+
         return response()->json(Encrypt::encryptData($organizersList));
     }
 
