@@ -107,7 +107,7 @@ class WelcomePageSettings extends MyBaseModel
         return $old_data;
     }
 
-    public function deleteImageLink($image_path, $thumb_path){
+    public function deleteImageLink($image_path, $thumb_path = null){
         $local_storage = "local";
 
         if(!empty($image_path)){
