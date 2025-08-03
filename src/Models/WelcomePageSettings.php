@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use ArcdevPackages\Core\Models\MyBaseModel;
+use Illuminate\Support\Facades\Auth;
 
 class WelcomePageSettings extends MyBaseModel
 {
