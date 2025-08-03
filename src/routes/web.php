@@ -10,6 +10,8 @@ use Inertia\Inertia;
 use ArcdevPackages\Core\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Auth;
 
+Route::get('getRoleList', [RoleController::class, 'getRoleList']);
+
 Route::middleware(['web'])->group(function () {
     Route::get('/welcomeSettings', [WelcomePageController::class, 'welcomeSettings'])->name('welcomeSettings')->middleware(EnsureUserHasRole::class.':admin');
     Route::get('/getAboutUs', [WelcomePageController::class, 'getAboutUs'])->name('getAboutUs');
