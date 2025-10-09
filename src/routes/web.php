@@ -34,6 +34,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('/saveFooters', [WelcomePageController::class, 'saveFooters'])->name('saveFooters');
     Route::get('/getGallery', [WelcomePageController::class, 'getGallery'])->name('getGallery');
     Route::post('/saveGallery', [WelcomePageController::class, 'saveGallery'])->name('saveGallery');
+    Route::get('/getVirtualTours', [WelcomePageController::class, 'getVirtualTours'])->name('getVirtualTours');
+    Route::post('/saveVirtualTours', [WelcomePageController::class, 'saveVirtualTours'])->name('saveVirtualTours');
 
     Route::get('getOrganizerList', [OrganizerController::class, 'getOrganizerList']);
 

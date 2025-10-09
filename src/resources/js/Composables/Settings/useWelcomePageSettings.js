@@ -11,6 +11,7 @@ export default function useWelcomePageSettings(){
     const gallery_swipers_errors            = ref([])
     const brands_errors                     = ref([])
     const footers_errors                    = ref([])
+    const virtual_tours_errors              = ref([])
 
     const main_banner = reactive({
         banner_url: null,
@@ -123,6 +124,11 @@ export default function useWelcomePageSettings(){
         overlay_url: null,
         overlay_img: null,
         delete_overlay_url: false,
+    })
+
+    const virtual_tours = reactive({
+        title: '',
+        links: [],
     })
 
     function resetFields(){
@@ -878,6 +884,58 @@ export default function useWelcomePageSettings(){
     }
     /** END GALLERY **/
 
+    /** START VIRTUAL TOUR **/
+    async function getVirtualTours(){
+        await axios.get('/getVirtualTours').then(response => {
+            if(response.data.virtual_tours != null){
+                virtual_tours.title            = response.data.virtual_tours.title
+                virtual_tours.links           = (response.data.virtual_tours.links != null) ? response.data.virtual_tours.slidlinkses : []
+                virtual_tours.links.forEach((link, index) => {
+                    link.bg_img = link.bg
+                    link.bg = null
+                });
+            }
+        });
+    }
+
+    function setFormDataVirtualTours(){
+        let formData = new FormData();
+
+        if(virtual_tours.title !=null){
+            formData.append('title', gallery.title);
+        }
+        
+        if(virtual_tours.links != null && (virtual_tours.links.length > 0)){
+            formData.append('links', JSON.stringify(virtual_tours.links));
+
+            virtual_tours.links.forEach((link, index) => {
+                if(link.bg != null && link.bg.name != null){
+                    formData.append('link'+index.toString(), link.bg, link.bg.name);
+                }else if(link.bg_img != null){
+                    formData.append('existing_link'+index.toString(), link.bg_img);
+                }
+            });
+        }
+        
+        return formData;
+    }
+
+    async function storeVirtualTours(){
+        virtual_tours_errors.value = []
+
+        let formData = setFormDataVirtualTours();
+
+        await axios.post('/saveVirtualTours',formData
+        ).then(response => {
+            resetFields()
+        }).catch(error => {
+            if(error.response && error.response.status == 422){
+                virtual_tours_errors.value = error.response.data.errors
+            }
+        });
+    }
+    /** END VIRTUAL TOUR **/
+
     return {
         main_banner,
         main_banner_errors,
@@ -919,5 +977,9 @@ export default function useWelcomePageSettings(){
         gallery_errors,
         getGallery,
         storeGallery,
+        virtual_tours,
+        virtual_tours_errors,
+        getVirtualTours,
+        storeVirtualTours,
     }
 }

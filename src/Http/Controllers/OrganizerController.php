@@ -273,7 +273,17 @@ class OrganizerController extends Controller
 
     public function getOrganizerLogo(){
         $currentDomain = request()->getHost();
-        $organizer = Organizer::select('image_url', 'thumbnail_url')->where('domain_name', $currentDomain)->first();
+
+        if($currentDomain == 'arcdevbuilder'){
+            if(Auth::check()){
+                $organizer = Organizer::select('image_url', 'thumbnail_url')->where('id', Auth::user()->organizer_id)->first();
+            }else{
+                $organizer = Organizer::select('image_url', 'thumbnail_url')->first();
+            }
+            
+        }else{
+            $organizer = Organizer::select('image_url', 'thumbnail_url')->where('domain_name', $currentDomain)->first();
+        }
 
         if(!empty($organizer)){
             return response()->json($organizer);

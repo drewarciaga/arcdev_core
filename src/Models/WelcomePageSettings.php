@@ -27,7 +27,7 @@ class WelcomePageSettings extends MyBaseModel
         'gallery',
         'brands',
         'footers',
-        'virtual_tour',
+        'virtual_tours',
     ];*/
 
     /**
@@ -143,7 +143,7 @@ class WelcomePageSettings extends MyBaseModel
         $this->update();
     }
 
-    public function updateLinkImage($request, $type, $folder_name = null){
+    public function updateLinkImage($request, $type, $folder_name = null, $customSize = 800){
         $manager = new ImageManager(new Driver());
         $status = "success";
         $folder = 'welcome_page/main_categories';
@@ -153,7 +153,7 @@ class WelcomePageSettings extends MyBaseModel
         }
         
         $name   = $type;
-        $size   = 800;
+        $size   = $customSize;
 
         $url = null;
 

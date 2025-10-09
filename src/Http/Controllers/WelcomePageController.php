@@ -928,4 +928,95 @@ class WelcomePageController extends Controller
             }
         }
     }
+
+    public function getVirtualTours(){
+        $user = User::find(Auth::user()->id);
+        $data = [];
+        if($user && $this->checkIfAdmin($user)){
+            $data['virtual_tours'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'virtual_tours');
+        }
+
+    	return response()->json($data);
+    }
+
+    public function saveVirtualTours(Request $request){
+        $input = $request->all();
+        $user = User::find(Auth::user()->id);
+        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(empty($welcome_page_settings)){
+            $welcome_page_settings = new WelcomePageSettings();
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+
+            $welcome_page_settings->save();
+        }else{
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+        }
+        
+        $old_data                               = json_decode($welcome_page_settings->virtual_tours, true);
+        $old_data['title']                      = !empty($input['title']) ? $input['title'] : "";
+
+        if(!empty($input['links']) ){
+            $links = json_decode($input['links']);
+
+            foreach($links as $key => $link){   
+                if(!empty($input['link'.$key]) && $request->hasFile('link'.$key)){
+
+                    /*if($request->file('link'.$key) != null && $request->file('link'.$key)->getSize() > 5242880){
+                        throw ValidationException::withMessages(['links' => 'The image cannot exceed 5MB']);
+                    }*/
+
+                    if(!empty($old_data['links']) && !empty($old_data['links'][$key]['bg'])){
+                        $welcome_page_settings->deleteImageLink($old_data['links'][$key]['bg'], null);
+                        $old_data['links']['bg'] = null;
+                    }
+
+                    $link->bg = $welcome_page_settings->updateLinkImage($request, 'link'.$key, 'virtual_tours', 2400);
+                    
+                }else if(!empty($input['existing_link'.$key])){
+                    $link->bg = $input['existing_link'.$key];
+                }
+       
+                if(!empty($link->delete_bg) && !empty($link->bg)){
+                    if(!empty($old_data['links']) && !empty($link->bg)){
+                        $welcome_page_settings->deleteImageLink($link->bg, null);
+                        $link->bg = null;
+                    }
+                }
+            }
+
+            $old_data['links'] = $links;
+        }else{
+            $old_data['links']  = [];
+        }
+     
+        if(empty($welcome_page_settings->virtual_tours) ){
+            $welcome_page_settings->virtual_tours = json_encode($old_data);
+            $welcome_page_settings->update();
+        }
+
+        $virtual_tours = !empty($welcome_page_settings->virtual_tours) ? json_decode($welcome_page_settings->virtual_tours) : null;
+
+        if(!empty($input['delete_overlay_url']) && $input['delete_overlay_url'] != 'false'){
+            if(!empty($virtual_tours->overlay_url)){
+                $welcome_page_settings->deleteImageLink($virtual_tours->overlay_url, null);
+                $old_data['overlay_url'] = null;
+            }
+        }else{
+            if(!empty($virtual_tours)){
+                if($request->hasFile('overlay_url')){
+                    if(!empty($virtual_tours->overlay_url)){
+                        $welcome_page_settings->deleteImageLink($virtual_tours->overlay_url, null);
+                        $old_data['overlay_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'overlay_url');
+                    $old_data['overlay_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        $welcome_page_settings->virtual_tours = json_encode($old_data);
+        $welcome_page_settings->update();
+    }
 }
