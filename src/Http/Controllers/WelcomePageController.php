@@ -2,7 +2,7 @@
 
 namespace ArcdevPackages\Core\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +30,6 @@ class WelcomePageController extends Controller
         }else{
             return null;
         }
-        
     }
 
     public function welcomeSettings(){
@@ -1017,6 +1016,100 @@ class WelcomePageController extends Controller
         }
 
         $welcome_page_settings->virtual_tours = json_encode($old_data);
+        $welcome_page_settings->update();
+    }
+
+public function getPosAds(){
+        $user_id = 1;
+        $user = User::find(Auth::user()->id);
+        $data = [];
+        $welcome_page_settings = WelcomePageSettings::find($user_id);
+
+        if(!empty($welcome_page_settings) && !empty($welcome_page_settings->pos_ads)){
+            $data['pos_ads'] = json_decode($welcome_page_settings->pos_ads);
+        }
+
+    	return response()->json($data);
+    }
+
+    public function savePosAds(Request $request){
+        $input = $request->all();
+        $user = User::find(Auth::user()->id);
+        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(empty($welcome_page_settings)){
+            $welcome_page_settings = new WelcomePageSettings();
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+
+            $welcome_page_settings->save();
+        }else{
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+        }
+        
+        $old_data                               = json_decode($welcome_page_settings->pos_ads, true);
+        $old_data['title']                      = !empty($input['title']) ? $input['title'] : "";
+
+        if(!empty($input['links']) ){
+            $links = json_decode($input['links']);
+
+            foreach($links as $key => $link){   
+                if(!empty($input['link'.$key]) && $request->hasFile('link'.$key)){
+
+                    /*if($request->file('link'.$key) != null && $request->file('link'.$key)->getSize() > 5242880){
+                        throw ValidationException::withMessages(['links' => 'The image cannot exceed 5MB']);
+                    }*/
+
+                    if(!empty($old_data['links']) && !empty($old_data['links'][$key]['bg'])){
+                        $welcome_page_settings->deleteImageLink($old_data['links'][$key]['bg'], null);
+                        $old_data['links']['bg'] = null;
+                    }
+
+                    $link->bg = $welcome_page_settings->updateLinkImage($request, 'link'.$key, 'pos_ads', 900);
+                    
+                }else if(!empty($input['existing_link'.$key])){
+                    $link->bg = $input['existing_link'.$key];
+                }
+       
+                if(!empty($link->delete_bg) && !empty($link->bg)){
+                    if(!empty($old_data['links']) && !empty($link->bg)){
+                        $welcome_page_settings->deleteImageLink($link->bg, null);
+                        $link->bg = null;
+                    }
+                }
+            }
+
+            $old_data['links'] = $links;
+        }else{
+            $old_data['links']  = [];
+        }
+     
+        if(empty($welcome_page_settings->pos_ads) ){
+            $welcome_page_settings->pos_ads = json_encode($old_data);
+            $welcome_page_settings->update();
+        }
+
+        $pos_ads = !empty($welcome_page_settings->pos_ads) ? json_decode($welcome_page_settings->pos_ads) : null;
+
+        if(!empty($input['delete_overlay_url']) && $input['delete_overlay_url'] != 'false'){
+            if(!empty($pos_ads->overlay_url)){
+                $welcome_page_settings->deleteImageLink($pos_ads->overlay_url, null);
+                $old_data['overlay_url'] = null;
+            }
+        }else{
+            if(!empty($pos_ads)){
+                if($request->hasFile('overlay_url')){
+                    if(!empty($pos_ads->overlay_url)){
+                        $welcome_page_settings->deleteImageLink($pos_ads->overlay_url, null);
+                        $old_data['overlay_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'overlay_url');
+                    $old_data['overlay_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        $welcome_page_settings->pos_ads = json_encode($old_data);
         $welcome_page_settings->update();
     }
 }

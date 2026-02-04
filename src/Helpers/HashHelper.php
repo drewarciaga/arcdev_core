@@ -6,20 +6,25 @@ use Hashids\Hashids;
 
 class HashHelper
 {
-    /**
-     * Encode a numeric ID using Hashids.
-     */
-    public static function encodeId($id): string
+    protected static ?Hashids $hashids = null;
+
+    protected static function hashids(): Hashids
     {
-        return app(Hashids::class)->encode($id);
+        if (! static::$hashids) {
+            static::$hashids = new Hashids(config('app.key'), 6);
+        }
+
+        return static::$hashids;
     }
 
-    /**
-     * Decode a hash back to a numeric ID.
-     */
+    public static function encodeId($id): string
+    {
+        return static::hashids()->encode($id);
+    }
+
     public static function decodeId(string $hash): ?int
     {
-        $decoded = app(Hashids::class)->decode($hash);
+        $decoded = static::hashids()->decode($hash);
         return $decoded ? $decoded[0] : null;
     }
 }

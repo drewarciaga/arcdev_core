@@ -6,9 +6,19 @@ use Hashids\Hashids;
 
 trait HashidTrait
 {
+    protected static ?Hashids $hashids = null;
+
+    protected static function hashids(): Hashids
+    {
+        if (! static::$hashids) {
+            static::$hashids = new Hashids(config('app.key'), 6);
+        }
+
+        return static::$hashids;
+    }
+
     protected static function bootHashidTrait()
     {
-        // Automatically encode ID when the model is retrieved
         static::retrieved(function ($model) {
             $model->hashid = self::encodeId($model->id);
         });
@@ -21,12 +31,12 @@ trait HashidTrait
 
     protected static function encodeId($id)
     {
-        return app(Hashids::class)->encode($id);
+        return static::hashids()->encode($id);
     }
 
     public static function decodeId($hashid)
     {
-        $decoded = app(Hashids::class)->decode($hashid);
+        $decoded = static::hashids()->decode($hashid);
         return $decoded ? $decoded[0] : null;
     }
 }

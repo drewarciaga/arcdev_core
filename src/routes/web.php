@@ -10,8 +10,6 @@ use Inertia\Inertia;
 use ArcdevPackages\Core\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('getRoleList', [RoleController::class, 'getRoleList']);
-
 Route::middleware(['web'])->group(function () {
     Route::get('/welcomeSettings', [WelcomePageController::class, 'welcomeSettings'])->name('welcomeSettings')->middleware(EnsureUserHasRole::class.':admin');
     Route::get('/getAboutUs', [WelcomePageController::class, 'getAboutUs'])->name('getAboutUs');
@@ -36,10 +34,15 @@ Route::middleware(['web'])->group(function () {
     Route::post('/saveGallery', [WelcomePageController::class, 'saveGallery'])->name('saveGallery');
     Route::get('/getVirtualTours', [WelcomePageController::class, 'getVirtualTours'])->name('getVirtualTours');
     Route::post('/saveVirtualTours', [WelcomePageController::class, 'saveVirtualTours'])->name('saveVirtualTours');
+    Route::get('/getPosAds', [WelcomePageController::class, 'getPosAds'])->name('getPosAds');
+    Route::post('/savePosAds', [WelcomePageController::class, 'savePosAds'])->name('savePosAds');
+
 
     Route::get('getOrganizerList', [OrganizerController::class, 'getOrganizerList']);
+    Route::get('getRoleList', [RoleController::class, 'getRoleList']);
 
     Route::get('/getOrganizerLogo', [OrganizerController::class, 'getOrganizerLogo'])->name('getOrganizerLogo');
+    
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
@@ -49,8 +52,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/access_controls/user_role/{user_id}', [AccessControlController::class, 'getUserRole'])->name('getUserRole');
     Route::resource('access_controls', AccessControlController::class)->middleware(EnsureUserHasRole::class.':super_admin');
 
+    Route::get('/organizerProfile', [OrganizerController::class, 'organizerProfile'])->name('organizerProfile');
     Route::get('/organizers/getAll', [OrganizerController::class, 'getAll'])->name('getAllCompanies');
-    Route::resource('organizers', OrganizerController::class)->middleware(EnsureUserHasRole::class.':super_admin');
+    Route::resource('organizers', OrganizerController::class)->middleware(EnsureUserHasRole::class.':super_admin|organizer');
 
     Route::get('/organizerSettings', [OrganizerSettingController::class, 'organizerSettings'])->name('organizerSettings');
     Route::get('/getOrganizerSettings', [OrganizerSettingController::class, 'getOrganizerSettings'])->name('getOrganizerSettings');

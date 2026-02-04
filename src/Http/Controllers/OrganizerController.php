@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 
 use ArcdevPackages\Core\Helpers\Encrypt;
@@ -23,6 +24,10 @@ class OrganizerController extends Controller
     use ValidatesRequests;
 
     public function index(){
+        if(!Auth::user()->super_admin){
+            return Inertia::render('Unauthorized');
+        }
+        
         return Inertia::render('Organizers/Index');
     }
 
@@ -86,11 +91,21 @@ class OrganizerController extends Controller
             $filters = json_decode($request->filters);
         }
 
-        $organizers = Organizer::select('organizers.*');
+        $org_ids = [];
+        if(!Auth::user()->super_admin){
+            $org_ids[] = Auth::user()->organizer_id;
+        }
+
+        $organizers = Organizer::select('id','business_name','first_name','last_name','domain_name','venue_id','slug',
+                        'thumbnail_url','profile_thumb_url','organizer_type','active')
+                        ->when(!empty($org_ids), function ($query) use ($org_ids){
+                                return $query->whereIn('id', $org_ids);
+                        });
 
         if(isset($filters->active)){
             $organizers->where('organizers.active', $filters->active);
         }
+
 
         if(!empty($search)){
             $organizers = $organizers->where(function($query) use ($search){
@@ -162,7 +177,7 @@ class OrganizerController extends Controller
         }else{
             $organizer->business_name         = isset($input['business_name']) ? $this->clearChars($input['business_name']) : null;
         }
-        
+
         $organizer->first_name                = $this->clearChars($input['first_name']);
         $organizer->last_name                 = $this->clearChars($input['last_name']);
         $organizer->middle_name               = isset($input['middle_name']) ? $this->clearChars($input['middle_name']) : null;
@@ -176,6 +191,10 @@ class OrganizerController extends Controller
         $organizer->organizer_type            = (isset($input['organizer_type']) && $input['organizer_type'] == 1) ? 1 : 0;
         $organizer->remarks                   = isset($input['remarks'])?$this->clearChars($input['remarks']):"";
         $organizer->slug                      = isset($input['slug']) ? $this->clearChars($input['slug']) : null;
+
+        if (Schema::hasColumn($organizer->getTable(), 'venue_id')) {
+            $organizer->venue_id = isset($input['venue_id']) ? $input['venue_id'] : null;
+        }
        
         return $organizer;
     }
