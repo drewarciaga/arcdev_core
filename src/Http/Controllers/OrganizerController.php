@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
-use App\Models\User;
 
 use ArcdevPackages\Core\Helpers\Encrypt;
 use ArcdevPackages\Core\Helpers\HashHelper;
@@ -96,11 +94,29 @@ class OrganizerController extends Controller
             $org_ids[] = Auth::user()->organizer_id;
         }
 
-        $organizers = Organizer::select('id','business_name','first_name','last_name','domain_name','venue_id','slug',
-                        'thumbnail_url','profile_thumb_url','organizer_type','active')
-                        ->when(!empty($org_ids), function ($query) use ($org_ids){
-                                return $query->whereIn('id', $org_ids);
-                        });
+        $organizerTable = (new Organizer())->getTable();
+
+        $columns = [
+            'id',
+            'business_name',
+            'first_name',
+            'last_name',
+            'domain_name',
+            'slug',
+            'thumbnail_url',
+            'profile_thumb_url',
+            'organizer_type',
+            'active',
+        ];
+
+        if (Schema::hasColumn($organizerTable, 'venue_id')) {
+            $columns[] = 'venue_id';
+        }
+
+        $organizers = Organizer::select($columns)
+            ->when(!empty($org_ids), function ($query) use ($org_ids) {
+                return $query->whereIn('id', $org_ids);
+            });
 
         if(isset($filters->active)){
             $organizers->where('organizers.active', $filters->active);

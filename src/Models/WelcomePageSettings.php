@@ -11,6 +11,7 @@ use Intervention\Image\Drivers\Gd\Driver;
 use ArcdevPackages\Core\Models\MyBaseModel;
 use Illuminate\Support\Facades\Auth;
 
+
 class WelcomePageSettings extends MyBaseModel
 {
     public $timestamps = false;
@@ -37,7 +38,8 @@ class WelcomePageSettings extends MyBaseModel
      */
     public $rules = [
         'description'        => 'max:2000',
-        'banner_url'         => 'image|mimes:jpeg,bmp,png,webp|max:5000'
+        'banner_url'         => 'image|mimes:jpeg,bmp,png,webp|max:7000',
+        'overlay_url'        => 'image|mimes:jpeg,bmp,png,webp|max:7000'
     ];
 
     /**
@@ -57,10 +59,12 @@ class WelcomePageSettings extends MyBaseModel
         $status = "success";
         $folder = 'welcome_page/main_banner';
 
+        $company_config = config(config('app_client.config_file'), []);
+
         //delete existing image first
+        $banner_height = !empty($company_config['banner_height']) ? $company_config['banner_height'] : 1900;
 
-
-        $url = $this->uploadImage($request, 'banner_url', $folder, 1900, 'main_banner_img');
+        $url = $this->uploadImage($request, 'banner_url', $folder, $banner_height, 'main_banner_img');
         if(!empty($url)){
             if($url == 'error'){
                 $status = "error";
@@ -162,7 +166,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . '-' . $this->id . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -183,10 +187,11 @@ class WelcomePageSettings extends MyBaseModel
             $image = $image->toWebp();
 
             Storage::disk($local_storage)->put($file_path, $image, 'public');
-    
+
             if( $local_storage == "local" ){
                 $url = str_replace("/storage", "/user_content", $url);
             }
+            
         }catch(\Exception $e){
             return "error";
         }
@@ -208,7 +213,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -254,7 +259,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -300,7 +305,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -346,7 +351,7 @@ class WelcomePageSettings extends MyBaseModel
             $file      = $request->file($type);
             $randomDigit = rand(100,999);
             $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
-            $file_path = Auth::user()->organizer_id . '/app_img' . '/' . $folder . '/' . $filename;
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
     
             if (Storage::disk('local5')->exists($file_path)) {
                 Storage::delete($file_path);
@@ -403,6 +408,52 @@ class WelcomePageSettings extends MyBaseModel
             $url = str_replace("/storage", "/organizer_content", $url);
         }
 
+        return $url;
+    }
+
+    public function updateMenuImage($request, $type){
+        $manager = new ImageManager(new Driver());
+        $status = "success";
+        $folder = 'welcome_page/menu';
+        $name   = $type;
+       // $size   = 1200;
+
+        $url = null;
+
+        try{
+            $local_storage = "local";
+            $file      = $request->file($type);
+            $randomDigit = rand(100,999);
+            $filename  = Str::slug($name) . date('jnGi') . $randomDigit . '.' . 'webp';
+            $file_path = 'app_img' . '/' . $folder . '/' . $filename;
+    
+            if (Storage::disk('local5')->exists($file_path)) {
+                Storage::delete($file_path);
+            }
+
+           /* if( system_settings('s3_storage') ){
+                $local_storage = "s3";
+            }else{
+                $local_storage = "local";
+            }*/
+            
+            Storage::disk($local_storage)->put($file_path, file_get_contents($file), 'public');
+            $url   = Storage::disk($local_storage)->url($file_path);
+      
+            $image = $manager->read(Storage::disk($local_storage)->get($file_path));
+          //  $image->scale(height: $size);
+
+            $image = $image->toWebp();
+
+            Storage::disk($local_storage)->put($file_path, $image, 'public');
+    
+            if( $local_storage == "local" ){
+                $url = str_replace("/storage", "/user_content", $url);
+            }
+        }catch(\Exception $e){
+            return "error";
+        }
+        
         return $url;
     }
 }

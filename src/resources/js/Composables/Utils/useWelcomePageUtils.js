@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import useWelcomePageSettings from '@/Composables/Settings/useWelcomePageSettings.js'
 
-const { main_banner, gallery, overview, main_categories, carousel_sliders, about_us, features, gallery_swipers, brands, footers, virtual_tours
+const { main_banner, gallery, overview, main_categories, carousel_sliders, about_us, features, gallery_swipers, brands, footers, virtual_tours, maps
     } = useWelcomePageSettings()
 
 export default function useWelcomePageUtils(){
@@ -17,6 +17,7 @@ export default function useWelcomePageUtils(){
         brands: null,
         footers: null,
         virtual_tours: null,
+        maps: null,
     })
 
     function initializeWelcomePage(welcome_page_settings){
@@ -82,6 +83,16 @@ export default function useWelcomePageUtils(){
                 overview.sub_text       = overview_json.sub_text
                 overview.buttons        = overview_json.buttons
                 overview.overlay_url    = overview_json.overlay_url
+
+                if(overview_json.slides != null){
+                    overview.slides      = overview_json.slides
+                    if(overview.slides != null){
+                        overview.slides.forEach((slide, index) => {
+                            slide.bg_img = slide.bg
+                            slide.bg = null
+                        });
+                    }
+                }
             }
 
             WPUtilsRes.overview = overview
@@ -113,6 +124,7 @@ export default function useWelcomePageUtils(){
             if(main_categories_json != null && main_categories_json != ''){
                 main_categories.title    = main_categories_json.title
                 main_categories.subtitle = main_categories_json.subtitle
+                main_categories.overlay_url     = main_categories_json.overlay_url
                 main_categories.links    = main_categories_json.links
             }
 
@@ -143,6 +155,7 @@ export default function useWelcomePageUtils(){
                 about_us.team_leader_position    = about_us_json.team_leader_position
                 about_us.team_leader_profile_img = about_us_json.team_leader_profile_url
                 about_us.overlay_url     = about_us_json.overlay_url
+                about_us.menus    = about_us_json.menus
             }
 
             WPUtilsRes.about_us = about_us
@@ -228,7 +241,20 @@ export default function useWelcomePageUtils(){
                 }
             }
 
-            WPUtilsRes.brands = brands
+            WPUtilsRes.virtual_tours = virtual_tours
+        }
+
+        if(welcome_page_settings.maps != null){
+            let maps_json = JSON.parse(welcome_page_settings.maps)
+            if(maps_json != null && maps_json != ''){
+                maps.title          = maps_json.title
+                maps.subtitle       = maps_json.subtitle
+                maps.overlay_url    = maps_json.overlay_url
+                maps.map_url        = maps_json.map_url
+               
+            }
+
+            WPUtilsRes.maps = maps
         }
 
     }

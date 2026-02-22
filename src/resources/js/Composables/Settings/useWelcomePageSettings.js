@@ -12,6 +12,8 @@ export default function useWelcomePageSettings(){
     const brands_errors                     = ref([])
     const footers_errors                    = ref([])
     const virtual_tours_errors              = ref([])
+    const pos_ads_errors                    = ref([])
+    const maps_errors                       = ref([])
 
     const main_banner = reactive({
         banner_url: null,
@@ -61,6 +63,7 @@ export default function useWelcomePageSettings(){
         overlay_url: null,
         overlay_img: null,
         delete_overlay_url: false,
+        menus: [],
     })
 
     const main_categories = reactive({
@@ -117,6 +120,17 @@ export default function useWelcomePageSettings(){
         delete_overlay_url: false,
     })
 
+    const maps = reactive({
+        title: '',
+        subtitle: '',
+        overlay_url: null,
+        overlay_img: null,
+        delete_overlay_url: false,
+        map_url: null,
+        map_img: null,
+        delete_map_url: false,
+    })
+
     const gallery = reactive({
         title: '',
         subtitle: '',
@@ -127,6 +141,11 @@ export default function useWelcomePageSettings(){
     })
 
     const virtual_tours = reactive({
+        title: '',
+        links: [],
+    })
+
+    const pos_ads = reactive({
         title: '',
         links: [],
     })
@@ -541,7 +560,14 @@ export default function useWelcomePageSettings(){
                     team_member.image_url = null
                 });
 
-                about_us.overlay_img             = response.data.about_us.overlay_url != null ? response.data.about_us.overlay_url: null
+                about_us.menus            = (response.data.about_us.menus != null) ? response.data.about_us.menus : []
+                about_us.menus.forEach((menu, index) => {
+                    menu.profile_img = menu.image_url
+                    menu.image_url = null
+                });
+
+                about_us.overlay_img          = response.data.about_us.overlay_url != null ? response.data.about_us.overlay_url: null
+
             }
         });
     }
@@ -593,6 +619,18 @@ export default function useWelcomePageSettings(){
             });
         }
 
+        if(about_us.menus != null && (about_us.menus.length > 0)){
+            formData.append('menus', JSON.stringify(about_us.menus));
+
+            about_us.menus.forEach((menu, index) => {
+                if(menu.image_url != null && menu.image_url.name != null){
+                    formData.append('menu'+index.toString(), menu.image_url, menu.image_url.name);
+                }else if(menu.profile_img != null){
+                    formData.append('existing_profile'+index.toString(), menu.profile_img);
+                }
+            });
+        }
+
         if(about_us.overlay_url !=null){
             formData.append('overlay_url', about_us.overlay_url, about_us.overlay_url.name);
         }
@@ -600,7 +638,7 @@ export default function useWelcomePageSettings(){
         if(about_us.delete_overlay_url == true){
             formData.append('delete_overlay_url', about_us.delete_overlay_url);
         }
-        
+
         return formData;
     }
 
@@ -889,7 +927,7 @@ export default function useWelcomePageSettings(){
         await axios.get('/getVirtualTours').then(response => {
             if(response.data.virtual_tours != null){
                 virtual_tours.title            = response.data.virtual_tours.title
-                virtual_tours.links           = (response.data.virtual_tours.links != null) ? response.data.virtual_tours.slidlinkses : []
+                virtual_tours.links           = (response.data.virtual_tours.links != null) ? response.data.virtual_tours.links : []
                 virtual_tours.links.forEach((link, index) => {
                     link.bg_img = link.bg
                     link.bg = null
@@ -902,7 +940,7 @@ export default function useWelcomePageSettings(){
         let formData = new FormData();
 
         if(virtual_tours.title !=null){
-            formData.append('title', gallery.title);
+            formData.append('title', virtual_tours.title);
         }
         
         if(virtual_tours.links != null && (virtual_tours.links.length > 0)){
@@ -936,6 +974,115 @@ export default function useWelcomePageSettings(){
     }
     /** END VIRTUAL TOUR **/
 
+    /** START POS ADS **/
+    async function getPosAds(){
+        await axios.get('/getPosAds').then(response => {
+            if(response.data.pos_ads != null){
+                pos_ads.title           = response.data.pos_ads.title
+                pos_ads.links           = (response.data.pos_ads.links != null) ? response.data.pos_ads.links : []
+                pos_ads.links.forEach((link, index) => {
+                    link.bg_img = link.bg
+                    link.bg = null
+                });
+            }
+        });
+    }
+
+    function setFormDataPosAds(){
+        let formData = new FormData();
+
+        if(pos_ads.title !=null){
+            formData.append('title', pos_ads.title);
+        }
+        
+        if(pos_ads.links != null && (pos_ads.links.length > 0)){
+            formData.append('links', JSON.stringify(pos_ads.links));
+
+            pos_ads.links.forEach((link, index) => {
+                if(link.bg != null && link.bg.name != null){
+                    formData.append('link'+index.toString(), link.bg, link.bg.name);
+                }else if(link.bg_img != null){
+                    formData.append('existing_link'+index.toString(), link.bg_img);
+                }
+            });
+        }
+        
+        return formData;
+    }
+
+    async function storePosAds(){
+        pos_ads_errors.value = []
+
+        let formData = setFormDataPosAds();
+
+        await axios.post('/savePosAds',formData
+        ).then(response => {
+            resetFields()
+        }).catch(error => {
+            if(error.response && error.response.status == 422){
+                pos_ads_errors.value = error.response.data.errors
+            }
+        });
+    }
+    /** END POS ADS **/
+
+    /** START MAP **/
+    async function getMaps(){
+        await axios.get('/getMaps').then(response => {
+            if(response.data.maps != null){
+                maps.title           = response.data.maps.title
+                maps.subtitle        = response.data.maps.subtitle
+                maps.map_img         = response.data.maps.map_url != null ? response.data.maps.map_url: null
+                maps.overlay_img     = response.data.maps.overlay_url != null ? response.data.maps.overlay_url: null
+            }
+        });
+    }
+
+    function setFormDataMaps(){
+        let formData = new FormData();
+
+        if(maps.title !=null){
+            formData.append('title', maps.title);
+        }
+        
+        if(maps.subtitle !=null){
+            formData.append('subtitle', maps.subtitle);
+        }
+
+        if(maps.map_url !=null){
+            formData.append('map_url', maps.map_url, maps.map_url.name);
+        }
+
+        if(maps.delete_map_url == true){
+            formData.append('delete_map_url', maps.delete_map_url);
+        }
+
+        if(maps.overlay_url !=null){
+            formData.append('overlay_url', maps.overlay_url, maps.overlay_url.name);
+        }
+
+        if(maps.delete_overlay_url == true){
+            formData.append('delete_overlay_url', maps.delete_overlay_url);
+        }
+
+        return formData;
+    }
+
+    async function storeMaps(){
+        maps_errors.value = []
+
+        let formData = setFormDataMaps();
+
+        await axios.post('/saveMaps',formData
+        ).then(response => {
+            resetFields()
+        }).catch(error => {
+            if(error.response && error.response.status == 422){
+                maps_errors.value = error.response.data.errors
+            }
+        });
+    }
+    /** END MAP **/
     return {
         main_banner,
         main_banner_errors,
@@ -981,5 +1128,13 @@ export default function useWelcomePageSettings(){
         virtual_tours_errors,
         getVirtualTours,
         storeVirtualTours,
+        pos_ads,
+        pos_ads_errors,
+        getPosAds,
+        storePosAds,
+        maps,
+        maps_errors,
+        getMaps,
+        storeMaps,
     }
 }
