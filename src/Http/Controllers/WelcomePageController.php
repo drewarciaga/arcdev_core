@@ -10,7 +10,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use ArcdevPackages\Core\Traits\UtilsTrait;
 use ArcdevPackages\Core\Models\WelcomePageSettings;
-use ArcdevPackages\Core\Models\Organizer;
 use App\Models\User;
 
 class WelcomePageController extends Controller
@@ -379,12 +378,12 @@ class WelcomePageController extends Controller
     public function saveAboutUs(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+        $welcome_page_settings = WelcomePageSettings::first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->user_id = Auth::user()->id;
 
             $welcome_page_settings->save();
         }else{
@@ -428,27 +427,60 @@ class WelcomePageController extends Controller
                         throw ValidationException::withMessages(['team_members' => 'The image cannot exceed 5MB']);
                     }
 
-                    if(!empty($old_data['team_members']) && !empty($old_data['team_members'][$key]['profile_url'])){
-                        $welcome_page_settings->deleteImageLink($old_data['team_members'][$key]['profile_url'], null);
-                        $old_data['team_members']['profile_url'] = null;
+                    if(!empty($old_data['team_members']) && !empty($old_data['team_members'][$key]['image_url'])){
+                        $welcome_page_settings->deleteImageLink($old_data['team_members'][$key]['image_url'], null);
+                        $old_data['team_members']['image_url'] = null;
                     }
 
-                    $team_member->profile_url = $welcome_page_settings->updateAboutUsImage($request, 'team_member'.$key);
+                    $team_member->image_url = $welcome_page_settings->updateAboutUsImage($request, 'team_member'.$key);
                     
                 }else if(!empty($input['existing_profile'.$key])){
-                    $team_member->profile_url = $input['existing_profile'.$key];
+                    $team_member->image_url = $input['existing_profile'.$key];
                 }
        
-                if(!empty($team_member->delete_profile_image) && !empty($team_member->profile_url)){
-                    if(!empty($old_data['team_members']) && !empty($team_member->profile_url)){
-                        $welcome_page_settings->deleteImageLink($team_member->profile_url, null);
-                        $team_member->profile_url = null;
+                if(!empty($team_member->delete_profile_image) && !empty($team_member->image_url)){
+                    if(!empty($old_data['team_members']) && !empty($team_member->image_url)){
+                        $welcome_page_settings->deleteImageLink($team_member->image_url, null);
+                        $team_member->image_url = null;
                     }
                 }
             }
             $old_data['team_members'] = $team_members;
         }else{
             $old_data['team_members']  = [];
+        }
+
+        if(!empty($input['menus']) ){
+            $menus = json_decode($input['menus']);
+
+            foreach($menus as $key => $menu){   
+                if(!empty($input['menu'.$key]) && $request->hasFile('menu'.$key)){
+
+                    if($request->file('menu'.$key) != null && $request->file('menu'.$key)->getSize() > 5242880){
+                        throw ValidationException::withMessages(['menus' => 'The image cannot exceed 5MB']);
+                    }
+
+                    if(!empty($old_data['menus']) && !empty($old_data['menus'][$key]['image_url'])){
+                        $welcome_page_settings->deleteImageLink($old_data['menus'][$key]['image_url'], null);
+                        $old_data['menus']['image_url'] = null;
+                    }
+
+                    $menu->image_url = $welcome_page_settings->updateMenuImage($request, 'menu'.$key);
+                    
+                }else if(!empty($input['existing_profile'.$key])){
+                    $menu->image_url = $input['existing_profile'.$key];
+                }
+       
+                if(!empty($menu->delete_profile_image) && !empty($menu->image_url)){
+                    if(!empty($old_data['menus']) && !empty($menu->image_url)){
+                        $welcome_page_settings->deleteImageLink($menu->image_url, null);
+                        $menu->image_url = null;
+                    }
+                }
+            }
+            $old_data['menus'] = $menus;
+        }else{
+            $old_data['menus']  = [];
         }
 
         if(empty($welcome_page_settings->about_us) ){
@@ -1019,14 +1051,11 @@ class WelcomePageController extends Controller
         $welcome_page_settings->update();
     }
 
-public function getPosAds(){
-        $user_id = 1;
+    public function getPosAds(){
         $user = User::find(Auth::user()->id);
         $data = [];
-        $welcome_page_settings = WelcomePageSettings::find($user_id);
-
-        if(!empty($welcome_page_settings) && !empty($welcome_page_settings->pos_ads)){
-            $data['pos_ads'] = json_decode($welcome_page_settings->pos_ads);
+        if($user && $this->checkIfAdmin($user)){
+            $data['pos_ads'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'pos_ads');
         }
 
     	return response()->json($data);
@@ -1110,6 +1139,82 @@ public function getPosAds(){
         }
 
         $welcome_page_settings->pos_ads = json_encode($old_data);
+        $welcome_page_settings->update();
+    }
+
+    public function getMaps(){
+        $user = User::find(Auth::user()->id);
+        $data = [];
+        if($user && $this->checkIfAdmin($user)){
+            $data['maps'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'maps');
+        }
+
+    	return response()->json($data);
+    }
+
+    public function saveMaps(Request $request){
+        $input = $request->all();
+        $user = User::find(Auth::user()->id);
+        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(empty($welcome_page_settings)){
+            $welcome_page_settings = new WelcomePageSettings();
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+
+            $welcome_page_settings->save();
+        }else{
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+        }
+        
+        $old_data                               = json_decode($welcome_page_settings->maps, true);
+        $old_data['title']                      = !empty($input['title']) ? $input['title'] : "";
+        $old_data['subtitle']                   = !empty($input['subtitle']) ? $input['subtitle'] : "";
+     
+        if(empty($welcome_page_settings->maps) ){
+            $welcome_page_settings->maps = json_encode($old_data);
+            $welcome_page_settings->update();
+        }
+
+        $maps = !empty($welcome_page_settings->maps) ? json_decode($welcome_page_settings->maps) : null;
+
+        if(!empty($input['delete_map_url']) && $input['delete_map_url'] != 'false'){
+            if(!empty($maps->map_url)){
+                $welcome_page_settings->deleteImageLink($maps->map_url, null);
+                $old_data['map_url'] = null;
+            }
+        }else{
+            if(!empty($maps)){
+                if($request->hasFile('map_url')){
+                    if(!empty($maps->map_url)){
+                        $welcome_page_settings->deleteImageLink($maps->map_url, null);
+                        $old_data['map_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'map_url');
+                    $old_data['map_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        if(!empty($input['delete_overlay_url']) && $input['delete_overlay_url'] != 'false'){
+            if(!empty($maps->overlay_url)){
+                $welcome_page_settings->deleteImageLink($maps->overlay_url, null);
+                $old_data['overlay_url'] = null;
+            }
+        }else{
+            if(!empty($maps)){
+                if($request->hasFile('overlay_url')){
+                    if(!empty($maps->overlay_url)){
+                        $welcome_page_settings->deleteImageLink($maps->overlay_url, null);
+                        $old_data['overlay_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'overlay_url');
+                    $old_data['overlay_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        $welcome_page_settings->maps = json_encode($old_data);
         $welcome_page_settings->update();
     }
 }

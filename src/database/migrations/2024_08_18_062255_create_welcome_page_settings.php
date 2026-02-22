@@ -27,6 +27,8 @@ return new class extends Migration
             $table->longText('brands')->nullable();
             $table->longText('footers')->nullable();
             $table->longText('virtual_tours')->nullable();
+            $table->longText('pos_ads')->nullable();
+            $table->longText('maps')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
