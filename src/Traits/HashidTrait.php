@@ -2,41 +2,58 @@
 
 namespace ArcdevPackages\Core\Traits;
 
-use Hashids\Hashids;
-
 trait HashidTrait
 {
-    protected static ?Hashids $hashids = null;
-
-    protected static function hashids(): Hashids
-    {
-        if (! static::$hashids) {
-            static::$hashids = new Hashids(config('app.key'), 6);
-        }
-
-        return static::$hashids;
-    }
+    protected static array $hashidColumnCache = [];
 
     protected static function bootHashidTrait()
     {
         static::retrieved(function ($model) {
-            $model->hashid = self::encodeId($model->id);
+            $hash = $model->computeHashid();
+            $model->setAttribute('hashid', $hash);
+
+            if ($model->hasHashidColumn()) {
+                $model->syncOriginalAttribute('hashid');
+            }
+        });
+
+        static::created(function ($model) {
+            if (!$model->hasHashidColumn()) return;
+
+            $existing = $model->getAttribute('hashid');
+            if (!empty($existing)) return;
+
+            $model->forceFill([
+                'hashid' => $model->computeHashid(),
+            ])->saveQuietly();
         });
     }
 
-    public function getHashidAttribute()
+    public function getHashidAttribute($value)
     {
-        return self::encodeId($this->id);
+        if (!empty($value)) return $value;
+        return $this->computeHashid();
     }
 
-    protected static function encodeId($id)
+    protected function computeHashid()
     {
-        return static::hashids()->encode($id);
+        return app(\Hashids\Hashids::class)->encode($this->getKey());
+    }
+
+    protected function hasHashidColumn()
+    {
+        $class = static::class;
+
+        if (!array_key_exists($class, self::$hashidColumnCache)) {
+            self::$hashidColumnCache[$class] = \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'hashid');
+        }
+
+        return self::$hashidColumnCache[$class];
     }
 
     public static function decodeId($hashid)
     {
-        $decoded = static::hashids()->decode($hashid);
+        $decoded = app(\Hashids\Hashids::class)->decode($hashid);
         return $decoded ? $decoded[0] : null;
     }
 }
