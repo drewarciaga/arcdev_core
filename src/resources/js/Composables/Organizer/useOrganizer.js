@@ -38,6 +38,7 @@ export default function useOrganizer(){
         profile_thumb_url: null,
         profile_thumb_img: null,
         slug: null,
+        venue_id: null,
     })
 
     const organizerColumns = ref([
@@ -77,6 +78,7 @@ export default function useOrganizer(){
         organizer.remarks = ''
         organizer.social_media_data = []
         organizer.slug = null
+        organizer.venue_id = null
     }
 
     async function getOrganizer(organizer_id){
@@ -102,6 +104,7 @@ export default function useOrganizer(){
                 organizer.profile_thumb_img    = response.data.profile_thumb_url
                 organizer.organizer_type       = response.data.organizer_type
                 organizer.remarks              = response.data.remarks
+                organizer.venue_id             = response.data.venue_id
                 
                 if(response.data.social_media_data != null){
                     organizer.social_media_data    = JSON.parse(response.data.social_media_data)
@@ -158,6 +161,7 @@ export default function useOrganizer(){
             'active',
             'organizer_type',
             'slug',
+            'venue_id',
         ];
 
         const data = {

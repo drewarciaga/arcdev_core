@@ -209,7 +209,7 @@ class OrganizerController extends Controller
         $organizer->slug                      = isset($input['slug']) ? $this->clearChars($input['slug']) : null;
 
         if (Schema::hasColumn($organizer->getTable(), 'venue_id')) {
-            $organizer->venue_id = isset($input['venue_id']) ? $input['venue_id'] : null;
+            $organizer->venue_id = isset($input['venue_id']) ? decodeId($input['venue_id']) : null;
         }
        
         return $organizer;
