@@ -76,7 +76,9 @@ class WelcomePageController extends Controller
         $old_data['header']                 = !empty($request->header) ? $this->clearChars($request->header) : null;
         $old_data['footer_text']            = !empty($request->footer_text) ? $this->clearChars($request->footer_text) : null;
         $old_data['main_text']              = !empty($request->main_text) ? $this->clearChars($request->main_text) : null;
+        $old_data['main_text2']              = !empty($request->main_text2) ? $this->clearChars($request->main_text2) : null;
         $old_data['sub_text']               = !empty($request->sub_text) ? $this->clearChars($request->sub_text) : null;
+        $old_data['sub_text2']               = !empty($request->sub_text2) ? $this->clearChars($request->sub_text2) : null;
         $old_data['header_menu_text']       = !empty($request->header_menu_text) ? $this->clearChars($request->header_menu_text) : null;
         
         if(empty($welcome_page_settings->main_banner) ){
