@@ -36,6 +36,10 @@ Route::middleware(['web'])->group(function () {
     Route::post('/saveVirtualTours', [WelcomePageController::class, 'saveVirtualTours'])->name('saveVirtualTours');
     Route::get('/getPosAds', [WelcomePageController::class, 'getPosAds'])->name('getPosAds');
     Route::post('/savePosAds', [WelcomePageController::class, 'savePosAds'])->name('savePosAds');
+    Route::get('/getTopics', [WelcomePageController::class, 'getTopics'])->name('getTopics');
+    Route::post('/saveTopics', [WelcomePageController::class, 'saveTopics'])->name('saveTopics');
+    Route::get('/getServices', [WelcomePageController::class, 'getServices'])->name('getServices');
+    Route::post('/saveServices', [WelcomePageController::class, 'saveServices'])->name('saveServices');
 
 
     Route::get('getOrganizerList', [OrganizerController::class, 'getOrganizerList']);

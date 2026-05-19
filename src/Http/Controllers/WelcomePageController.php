@@ -80,7 +80,7 @@ class WelcomePageController extends Controller
         $old_data['sub_text']               = !empty($request->sub_text) ? $this->clearChars($request->sub_text) : null;
         $old_data['sub_text2']               = !empty($request->sub_text2) ? $this->clearChars($request->sub_text2) : null;
         $old_data['header_menu_text']       = !empty($request->header_menu_text) ? $this->clearChars($request->header_menu_text) : null;
-        
+
         if(empty($welcome_page_settings->main_banner) ){
             $welcome_page_settings->main_banner = json_encode($old_data);
             $welcome_page_settings->update();
@@ -688,6 +688,192 @@ class WelcomePageController extends Controller
         }
 
         $welcome_page_settings->features = json_encode($old_data);
+        $welcome_page_settings->update();
+    }
+
+    public function getTopics(){
+        $user = User::find(Auth::user()->id);
+        $data = [];
+        if($user && $this->checkIfAdmin($user)){
+            $data['topics'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'topics');
+        }
+
+    	return response()->json($data);
+    }
+
+    public function saveTopics(Request $request){
+        $input = $request->all();
+        $user = User::find(Auth::user()->id);
+        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(empty($welcome_page_settings)){
+            $welcome_page_settings = new WelcomePageSettings();
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+
+            $welcome_page_settings->save();
+        }else{
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+        }
+        
+        $old_data                               = json_decode($welcome_page_settings->topics, true);
+        $old_data['title']                      = !empty($input['title']) ? $input['title'] : "";
+        $old_data['subtitle']                   = !empty($input['subtitle']) ? $input['subtitle'] : "";
+        $old_data['main_text']                  = !empty($input['main_text']) ? $input['main_text'] : "";
+
+        if(!empty($input['links']) ){
+            $links = json_decode($input['links']);
+
+            foreach($links as $key => $link){   
+                if(!empty($input['link'.$key]) && $request->hasFile('link'.$key)){
+
+                    if($request->file('link'.$key) != null && $request->file('link'.$key)->getSize() > 5242880){
+                        throw ValidationException::withMessages(['links' => 'The image cannot exceed 5MB']);
+                    }
+
+                    if(!empty($old_data['links']) && !empty($old_data['links'][$key]['bg'])){
+                        $welcome_page_settings->deleteImageLink($old_data['links'][$key]['bg'], null);
+                        $old_data['links']['bg'] = null;
+                    }
+
+                    $link->bg = $welcome_page_settings->updateLinkImage($request, 'link'.$key, 'topics');
+                    
+                }else if(!empty($input['existing_link'.$key])){
+                    $link->bg = $input['existing_link'.$key];
+                }
+       
+                if(!empty($link->delete_bg) && !empty($link->bg)){
+                    if(!empty($old_data['links']) && !empty($link->bg)){
+                        $welcome_page_settings->deleteImageLink($link->bg, null);
+                        $link->bg = null;
+                    }
+                }
+            }
+
+            $old_data['links'] = $links;
+        }else{
+            $old_data['links']  = [];
+        }
+     
+        if(empty($welcome_page_settings->topics) ){
+            $welcome_page_settings->topics = json_encode($old_data);
+            $welcome_page_settings->update();
+        }
+
+        $topics = !empty($welcome_page_settings->topics) ? json_decode($welcome_page_settings->topics) : null;
+
+        if(!empty($input['delete_overlay_url']) && $input['delete_overlay_url'] != 'false'){
+            if(!empty($topics->overlay_url)){
+                $welcome_page_settings->deleteImageLink($topics->overlay_url, null);
+                $old_data['overlay_url'] = null;
+            }
+        }else{
+            if(!empty($topics)){
+                if($request->hasFile('overlay_url')){
+                    if(!empty($topics->overlay_url)){
+                        $welcome_page_settings->deleteImageLink($topics->overlay_url, null);
+                        $old_data['overlay_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'overlay_url');
+                    $old_data['overlay_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        $welcome_page_settings->topics = json_encode($old_data);
+        $welcome_page_settings->update();
+    }
+
+    public function getServices(){
+        $user = User::find(Auth::user()->id);
+        $data = [];
+        if($user && $this->checkIfAdmin($user)){
+            $data['services'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'services');
+        }
+
+    	return response()->json($data);
+    }
+
+    public function saveServices(Request $request){
+        $input = $request->all();
+        $user = User::find(Auth::user()->id);
+        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(empty($welcome_page_settings)){
+            $welcome_page_settings = new WelcomePageSettings();
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+
+            $welcome_page_settings->save();
+        }else{
+            $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
+        }
+        
+        $old_data                               = json_decode($welcome_page_settings->services, true);
+        $old_data['title']                      = !empty($input['title']) ? $input['title'] : "";
+        $old_data['subtitle']                   = !empty($input['subtitle']) ? $input['subtitle'] : "";
+        $old_data['main_text']                  = !empty($input['main_text']) ? $input['main_text'] : "";
+
+        if(!empty($input['links']) ){
+            $links = json_decode($input['links']);
+
+            foreach($links as $key => $link){   
+                if(!empty($input['link'.$key]) && $request->hasFile('link'.$key)){
+
+                    if($request->file('link'.$key) != null && $request->file('link'.$key)->getSize() > 5242880){
+                        throw ValidationException::withMessages(['links' => 'The image cannot exceed 5MB']);
+                    }
+
+                    if(!empty($old_data['links']) && !empty($old_data['links'][$key]['bg'])){
+                        $welcome_page_settings->deleteImageLink($old_data['links'][$key]['bg'], null);
+                        $old_data['links']['bg'] = null;
+                    }
+
+                    $link->bg = $welcome_page_settings->updateLinkImage($request, 'link'.$key, 'services');
+                    
+                }else if(!empty($input['existing_link'.$key])){
+                    $link->bg = $input['existing_link'.$key];
+                }
+       
+                if(!empty($link->delete_bg) && !empty($link->bg)){
+                    if(!empty($old_data['links']) && !empty($link->bg)){
+                        $welcome_page_settings->deleteImageLink($link->bg, null);
+                        $link->bg = null;
+                    }
+                }
+            }
+
+            $old_data['links'] = $links;
+        }else{
+            $old_data['links']  = [];
+        }
+     
+        if(empty($welcome_page_settings->services) ){
+            $welcome_page_settings->services = json_encode($old_data);
+            $welcome_page_settings->update();
+        }
+
+        $services = !empty($welcome_page_settings->services) ? json_decode($welcome_page_settings->services) : null;
+
+        if(!empty($input['delete_overlay_url']) && $input['delete_overlay_url'] != 'false'){
+            if(!empty($services->overlay_url)){
+                $welcome_page_settings->deleteImageLink($services->overlay_url, null);
+                $old_data['overlay_url'] = null;
+            }
+        }else{
+            if(!empty($services)){
+                if($request->hasFile('overlay_url')){
+                    if(!empty($services->overlay_url)){
+                        $welcome_page_settings->deleteImageLink($services->overlay_url, null);
+                        $old_data['overlay_url'] = null;
+                    }
+                    $uploadProfileRes = $welcome_page_settings->updateOverlayImage($request, 'overlay_url');
+                    $old_data['overlay_url']       = $uploadProfileRes;
+                }
+            }
+        }
+
+        $welcome_page_settings->services = json_encode($old_data);
         $welcome_page_settings->update();
     }
 

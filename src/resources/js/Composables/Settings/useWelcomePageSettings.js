@@ -7,6 +7,8 @@ export default function useWelcomePageSettings(){
     const main_categories_errors            = ref([])
     const carousel_sliders_errors           = ref([])
     const features_errors                   = ref([])
+    const topics_errors                     = ref([])
+    const services_errors                   = ref([])
     const gallery_errors                    = ref([])
     const gallery_swipers_errors            = ref([])
     const brands_errors                     = ref([])
@@ -102,6 +104,26 @@ export default function useWelcomePageSettings(){
         delete_overlay_url: false,
     })
 
+    const topics = reactive({
+        title: '',
+        subtitle: '',
+        main_text: '',
+        links: [],
+        overlay_url: null,
+        overlay_img: null,
+        delete_overlay_url: false,
+    })
+
+    const services = reactive({
+        title: '',
+        subtitle: '',
+        main_text: '',
+        links: [],
+        overlay_url: null,
+        overlay_img: null,
+        delete_overlay_url: false,
+    })
+
     const brands = reactive({
         title: '',
         subtitle: '',
@@ -152,6 +174,8 @@ export default function useWelcomePageSettings(){
 
     function resetFields(){
         main_categories.links  = []
+        topics.links = []
+        services.links = []
         carousel_sliders.slides = []
         gallery_swipers.slides  = []
         gallery.slides  = []
@@ -724,6 +748,150 @@ export default function useWelcomePageSettings(){
     }
     /** END FEATURES **/
 
+    /** START TOPICS **/
+    async function getTopics(){
+        await axios.get('/getTopics').then(response => {
+            if(response.data.topics != null){
+                topics.title           = response.data.topics.title
+                topics.subtitle        = response.data.topics.subtitle
+                topics.main_text       = response.data.topics.main_text
+                topics.links           = (response.data.topics.links != null) ? response.data.topics.links : []
+                topics.links.forEach((link, index) => {
+                    link.bg_img = link.bg
+                    link.bg = null
+                });
+                topics.overlay_img     = response.data.topics.overlay_url != null ? response.data.topics.overlay_url: null
+            }
+        });
+    }
+
+    function setFormDataTopics(){
+        let formData = new FormData();
+
+        if(topics.title !=null){
+            formData.append('title', topics.title);
+        }
+
+        if(topics.subtitle !=null){
+            formData.append('subtitle', topics.subtitle);
+        }
+
+        if(topics.main_text !=null){
+            formData.append('main_text', topics.main_text);
+        }
+
+        if(topics.links != null && (topics.links.length > 0)){
+            formData.append('links', JSON.stringify(topics.links));
+
+            topics.links.forEach((link, index) => {
+                if(link.bg != null && link.bg.name != null){
+                    formData.append('link'+index.toString(), link.bg, link.bg.name);
+                }else if(link.bg_img != null){
+                    formData.append('existing_link'+index.toString(), link.bg_img);
+                }
+            });
+        }
+
+        if(topics.overlay_url !=null){
+            formData.append('overlay_url', topics.overlay_url, topics.overlay_url.name);
+        }
+
+        if(topics.delete_overlay_url == true){
+            formData.append('delete_overlay_url', topics.delete_overlay_url);
+        }
+
+        return formData;
+    }
+
+    async function storeTopics(){
+        topics_errors.value = []
+
+        let formData = setFormDataTopics();
+
+        await axios.post('/saveTopics',formData
+        ).then(response => {
+            resetFields()
+        }).catch(error => {
+            if(error.response && error.response.status == 422){
+                topics_errors.value = error.response.data.errors
+            }
+        });
+    }
+    /** END TOPICS **/
+
+    /** START SERVICES **/
+    async function getServices(){
+        await axios.get('/getServices').then(response => {
+            if(response.data.services != null){
+                services.title           = response.data.services.title
+                services.subtitle        = response.data.services.subtitle
+                services.main_text       = response.data.services.main_text
+                services.links           = (response.data.services.links != null) ? response.data.services.links : []
+                services.links.forEach((link, index) => {
+                    link.bg_img = link.bg
+                    link.bg = null
+                });
+                services.overlay_img     = response.data.services.overlay_url != null ? response.data.services.overlay_url: null
+            }
+        });
+    }
+
+    function setFormDataServices(){
+        let formData = new FormData();
+
+        if(services.title !=null){
+            formData.append('title', services.title);
+        }
+
+        if(services.subtitle !=null){
+            formData.append('subtitle', services.subtitle);
+        }
+
+        if(services.main_text !=null){
+            formData.append('main_text', services.main_text);
+        }
+
+        if(services.links != null && (services.links.length > 0)){
+            formData.append('links', JSON.stringify(services.links));
+
+            services.links.forEach((link, index) => {
+                if(link.bg != null && link.bg.name != null){
+                    formData.append('link'+index.toString(), link.bg, link.bg.name);
+                }else if(link.bg_img != null){
+                    formData.append('existing_link'+index.toString(), link.bg_img);
+                }
+            });
+        }
+
+        if(services.overlay_url !=null){
+            formData.append('overlay_url', services.overlay_url, services.overlay_url.name);
+        }
+
+        if(services.delete_overlay_url == true){
+            formData.append('delete_overlay_url', services.delete_overlay_url);
+        }
+
+        return formData;
+    }
+
+    async function storeServices(){
+        services_errors.value = []
+
+        let formData = setFormDataServices();
+
+        await axios.post('/saveServices',formData
+        ).then(response => {
+            resetFields()
+        }).catch(error => {
+            if(error.response && error.response.status == 422){
+                services_errors.value = error.response.data.errors
+            }
+        });
+    }
+    /** END SERVICES **/
+
+
+
     /** START BRANDS **/
     async function getBrands(){
         await axios.get('/getBrands').then(response => {
@@ -1104,6 +1272,14 @@ export default function useWelcomePageSettings(){
         features_errors,
         getFeatures,
         storeFeatures,
+        topics,
+        topics_errors,
+        getTopics,
+        storeTopics,
+        services,
+        services_errors,
+        getServices,
+        storeServices,
         about_us_errors,
         about_us,
         getAboutUs,
