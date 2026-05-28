@@ -58,12 +58,17 @@ class WelcomePageController extends Controller
 
     public function saveMainBanner(Request $request){
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -165,12 +170,17 @@ class WelcomePageController extends Controller
     public function saveOverview(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -253,12 +263,17 @@ class WelcomePageController extends Controller
     public function saveMainCategories(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -320,12 +335,17 @@ class WelcomePageController extends Controller
     public function saveCarouselSliders(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -380,12 +400,17 @@ class WelcomePageController extends Controller
     public function saveAboutUs(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::first();
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->user_id = Auth::user()->id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -527,12 +552,17 @@ class WelcomePageController extends Controller
     public function saveGallerySwipers(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -612,12 +642,17 @@ class WelcomePageController extends Controller
     public function saveFeatures(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -704,12 +739,17 @@ class WelcomePageController extends Controller
     public function saveTopics(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -797,12 +837,17 @@ class WelcomePageController extends Controller
     public function saveServices(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -890,12 +935,17 @@ class WelcomePageController extends Controller
     public function saveBrands(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -982,12 +1032,17 @@ class WelcomePageController extends Controller
     public function saveFooters(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -1074,12 +1129,17 @@ class WelcomePageController extends Controller
     public function saveGallery(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -1161,12 +1221,17 @@ class WelcomePageController extends Controller
     public function saveVirtualTours(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -1252,12 +1317,17 @@ class WelcomePageController extends Controller
     public function savePosAds(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
@@ -1343,12 +1413,17 @@ class WelcomePageController extends Controller
     public function saveMaps(Request $request){
         $input = $request->all();
         $user = User::find(Auth::user()->id);
-        $welcome_page_settings = WelcomePageSettings::find($user->id);
+
+        if(!$user || !$this->checkIfAdmin($user)){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $welcome_page_settings = WelcomePageSettings::where('organizer_id', $user->organizer_id)->first();
 
         if(empty($welcome_page_settings)){
             $welcome_page_settings = new WelcomePageSettings();
             $this->validate($request, $welcome_page_settings->rules, $welcome_page_settings->messages);
-            $welcome_page_settings->organizer_id = Auth::user()->organizer_id;
+            $welcome_page_settings->organizer_id = $user->organizer_id;
 
             $welcome_page_settings->save();
         }else{
