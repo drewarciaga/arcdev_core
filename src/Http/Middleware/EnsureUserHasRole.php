@@ -25,8 +25,14 @@ class EnsureUserHasRole
 
         $roles = explode('|',$role_names);
         $user = User::find(Auth::user()->id);
-        
-        if(!empty($user->super_admin) || $user->hasRole('super_admin')){
+
+        // Full-access roles bypass every role-gated route. Driven by config
+        // (config/core.php => full_access_roles, default ['super_admin']) so
+        // consuming apps can opt extra roles in via CORE_FULL_ACCESS_ROLES
+        // without affecting any other app. Default behavior is unchanged.
+        $fullAccessRoles = config('core.full_access_roles', ['super_admin']);
+
+        if(!empty($user->super_admin) || $user->hasAnyRole($fullAccessRoles)){
             return $next($request);
         }
 
