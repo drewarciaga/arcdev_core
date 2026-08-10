@@ -1,6 +1,7 @@
 {
     "name": "arcdev-packages/core",
     "description": "Package for creating and managing landing pages",
+    "version": "1.0.1",
     "type": "library",
     "license": "MIT",
     "autoload": {
