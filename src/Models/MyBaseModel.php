@@ -40,7 +40,13 @@ class MyBaseModel extends \Illuminate\Database\Eloquent\Model
             $image = $image->toWebp();
 
             Storage::disk($local_storage)->put($file_path, $image, 'public');
-    
+
+            $absolutePath = Storage::disk($local_storage)->path($file_path);
+
+            if ( file_exists($absolutePath) ) {
+                @chmod($absolutePath, 0644);
+            }
+
             if( $local_storage == "local" ){
                 $url = str_replace("/storage", "/user_content", $url);
             }
@@ -81,7 +87,13 @@ class MyBaseModel extends \Illuminate\Database\Eloquent\Model
             $image = $image->toWebp();
 
             Storage::disk($local_storage)->put($file_path, $image, 'public');
-    
+
+            $absolutePath = Storage::disk($local_storage)->path($file_path);
+
+            if ( file_exists($absolutePath) ) {
+                @chmod($absolutePath, 0644);
+            }
+
             if( $local_storage == "local" ){
                 $url = str_replace("/storage", "/user_content", $url);
             }
