@@ -17,8 +17,21 @@ class WelcomePageController extends Controller
     use UtilsTrait;
     use ValidatesRequests;
 
-    private function checkIfAdmin($user){
-        return (!empty($user->super_admin) || $user->hasRole('super_admin') || $user->hasRole('admin')) ? true : false;
+    /**
+     * consumer apps that don't have the module-access matrix on their User
+     * model (i.e. anything other than arcdev_sports) fall back to the
+     * original admin/super_admin check — zero behavior change for them.
+     */
+    private function canAccess($user, string $action = 'view'){
+        if (empty($user)) {
+            return false;
+        }
+
+        if (method_exists($user, 'canAccessModule')) {
+            return (bool) $user->canAccessModule('website_settings', $action);
+        }
+
+        return (bool) (!empty($user->super_admin) || $user->hasRole('super_admin') || $user->hasRole('admin'));
     }
 
     private function getWelcomePageSettingsDetail($organizer_id, $param){
@@ -39,7 +52,7 @@ class WelcomePageController extends Controller
 
         $user = User::find(Auth::user()->id);
 
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             return Inertia::render('WelcomeSettings');
         }else{
             return Inertia::render('Unauthorized');
@@ -49,7 +62,7 @@ class WelcomePageController extends Controller
     public function getMainBanner(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['main_banner'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'main_banner');
         }
 
@@ -59,7 +72,7 @@ class WelcomePageController extends Controller
     public function saveMainBanner(Request $request){
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -160,7 +173,7 @@ class WelcomePageController extends Controller
     public function getOverview(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['overview'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'overview');
         }
 
@@ -171,7 +184,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -253,7 +266,7 @@ class WelcomePageController extends Controller
     public function getMainCategories(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['main_categories'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'main_categories');
         }
 
@@ -264,7 +277,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -325,7 +338,7 @@ class WelcomePageController extends Controller
     public function getCarouselSliders(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['carousel_sliders'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'carousel');
         }
 
@@ -336,7 +349,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -390,7 +403,7 @@ class WelcomePageController extends Controller
     public function getAboutUs(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['about_us'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'about_us');
         }
 
@@ -401,7 +414,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -545,7 +558,7 @@ class WelcomePageController extends Controller
     public function getGallerySwipers(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['gallery_swipers'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'swiper_gallery');
         }
 
@@ -556,7 +569,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -635,7 +648,7 @@ class WelcomePageController extends Controller
     public function getFeatures(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['features'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'features');
         }
 
@@ -646,7 +659,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -732,7 +745,7 @@ class WelcomePageController extends Controller
     public function getTopics(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['topics'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'topics');
         }
 
@@ -743,7 +756,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -830,7 +843,7 @@ class WelcomePageController extends Controller
     public function getServices(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['services'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'services');
         }
 
@@ -841,7 +854,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -928,7 +941,7 @@ class WelcomePageController extends Controller
     public function getBrands(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['brands'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'brands');
         }
 
@@ -939,7 +952,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -1025,7 +1038,7 @@ class WelcomePageController extends Controller
     public function getFooters(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['footers'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'footers');
         }
 
@@ -1036,7 +1049,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -1122,7 +1135,7 @@ class WelcomePageController extends Controller
     public function getGallery(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['gallery'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'gallery');
         }
 
@@ -1133,7 +1146,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -1214,7 +1227,7 @@ class WelcomePageController extends Controller
     public function getVirtualTours(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['virtual_tours'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'virtual_tours');
         }
 
@@ -1225,7 +1238,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -1310,7 +1323,7 @@ class WelcomePageController extends Controller
     public function getPosAds(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['pos_ads'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'pos_ads');
         }
 
@@ -1321,7 +1334,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -1406,7 +1419,7 @@ class WelcomePageController extends Controller
     public function getMaps(){
         $user = User::find(Auth::id());
         $data = [];
-        if($user && $this->checkIfAdmin($user)){
+        if($user && $this->canAccess($user, 'view')){
             $data['maps'] = $this->getWelcomePageSettingsDetail($user->organizer_id, 'maps');
         }
 
@@ -1417,7 +1430,7 @@ class WelcomePageController extends Controller
         $input = $request->all();
         $user = User::find(Auth::id());
 
-        if(!$user || !$this->checkIfAdmin($user)){
+        if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
