@@ -11,7 +11,7 @@ use ArcdevPackages\Core\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Auth;
 
 Route::middleware(['web'])->group(function () {
-    Route::get('/welcomeSettings', [WelcomePageController::class, 'welcomeSettings'])->name('welcomeSettings')->middleware(EnsureUserHasRole::class.':admin');
+    Route::get('/welcomeSettings', [WelcomePageController::class, 'welcomeSettings'])->name('welcomeSettings');
     Route::get('/getAboutUs', [WelcomePageController::class, 'getAboutUs'])->name('getAboutUs');
     Route::post('/saveAboutUs', [WelcomePageController::class, 'saveAboutUs'])->name('saveAboutUs');
     Route::get('/getMainBanner', [WelcomePageController::class, 'getMainBanner'])->name('getMainBanner');
