@@ -474,6 +474,8 @@ class OrganizerController extends Controller
                 'account_name' => trim((string) ($row['account_name'] ?? '')),
                 'account_number' => trim((string) ($row['account_number'] ?? '')),
                 'qr_code_url' => $qrCodeUrl,
+                // Toggles whether this QR code is offered in public booking. Missing = active.
+                'active' => !array_key_exists('active', $row) || filter_var($row['active'], FILTER_VALIDATE_BOOLEAN),
                 'remarks' => trim((string) ($row['remarks'] ?? '')),
             ];
         }
@@ -583,6 +585,8 @@ class OrganizerController extends Controller
                     'account_name' => trim((string) ($row['account_name'] ?? '')),
                     'account_number' => trim((string) ($row['account_number'] ?? '')),
                     'qr_code_url' => trim((string) ($row['qr_code_url'] ?? '')),
+                    // Missing = active (legacy rows saved before the toggle existed).
+                    'active' => !array_key_exists('active', $row) || filter_var($row['active'], FILTER_VALIDATE_BOOLEAN),
                     'remarks' => trim((string) ($row['remarks'] ?? '')),
                 ];
             })
