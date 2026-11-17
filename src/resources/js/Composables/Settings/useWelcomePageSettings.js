@@ -38,6 +38,7 @@ export default function useWelcomePageSettings(){
         header_logo_img: null,
         delete_header_logo_url: false,
         header_menu_text: 'My Logo',
+        slides: [],
     })
 
     const overview = reactive({
@@ -204,6 +205,12 @@ export default function useWelcomePageSettings(){
                 main_banner.sub_text2   = response.data.main_banner.sub_text2 != null ? response.data.main_banner.sub_text2: ''
                 main_banner.footer_text = response.data.main_banner.footer_text != null ? response.data.main_banner.footer_text: ''
                 main_banner.overlay_img = response.data.main_banner.overlay_url != null ? response.data.main_banner.overlay_url: null
+
+                main_banner.slides = (response.data.main_banner.slides != null) ? response.data.main_banner.slides : []
+                main_banner.slides.forEach((slide, index) => {
+                    slide.bg_img = slide.bg
+                    slide.bg = null
+                });
             }
         });
     }
@@ -269,6 +276,18 @@ export default function useWelcomePageSettings(){
 
         if(main_banner.delete_overlay_url == true){
             formData.append('delete_overlay_url', main_banner.delete_overlay_url);
+        }
+
+        if(main_banner.slides != null && (main_banner.slides.length > 0)){
+            formData.append('slides', JSON.stringify(main_banner.slides));
+
+            main_banner.slides.forEach((slide, index) => {
+                if(slide.bg != null && slide.bg.name != null){
+                    formData.append('slide'+index.toString(), slide.bg, slide.bg.name);
+                }else if(slide.bg_img != null){
+                    formData.append('existing_slide'+index.toString(), slide.bg_img);
+                }
+            });
         }
         
         return formData;

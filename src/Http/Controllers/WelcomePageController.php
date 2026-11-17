@@ -71,6 +71,7 @@ class WelcomePageController extends Controller
 
     public function saveMainBanner(Request $request){
         $user = User::find(Auth::id());
+        $input = $request->all();
 
         if(!$user || !$this->canAccess($user, 'edit')){
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -164,6 +165,33 @@ class WelcomePageController extends Controller
                     $old_data['overlay_url']       = $uploadProfileRes;
                 }
             }
+        }
+
+        if(!empty($input['slides']) ){
+            $slides = json_decode($input['slides']);
+
+            foreach($slides as $key => $slide){
+                if(!empty($input['slide'.$key]) && $request->hasFile('slide'.$key)){
+                    if(!empty($old_data['slides']) && !empty($old_data['slides'][$key]['bg'])){
+                        $welcome_page_settings->deleteImageLink($old_data['slides'][$key]['bg'], null);
+                        $old_data['slides']['bg'] = null;
+                    }
+
+                    $slide->bg = $welcome_page_settings->updateSlideImage($request, 'slide'.$key);
+
+                }else if(!empty($input['existing_slide'.$key])){
+                    $slide->bg = $input['existing_slide'.$key];
+                }
+
+                if(!empty($slide->delete_bg)){
+                    $welcome_page_settings->deleteImageLink($slide->bg, null);
+                    $slide->bg = null;
+                }
+            }
+
+            $old_data['slides'] = $slides;
+        }else{
+            $old_data['slides']  = [];
         }
 
         $welcome_page_settings->main_banner = json_encode($old_data);
